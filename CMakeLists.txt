@@ -2,7 +2,7 @@
 
 project("AOC"
 	CXX
-	# CUDA
+	CUDA
 )
 
 set(CMAKE_CUDA_STANDARD 23)

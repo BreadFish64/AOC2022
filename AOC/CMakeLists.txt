@@ -1,4 +1,4 @@
-﻿#find_package(CUDA     REQUIRED)
+﻿find_package(CUDA     REQUIRED)
 
 find_package(fmt      CONFIG REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
@@ -35,9 +35,9 @@ endfunction()
 Problem(test)
 Problem(calorie_counting)
 
-#cuda_add_executable(cuda_test
-#    cuda_test.cu
-#    OPTIONS --expt-relaxed-constexpr
-#)
-#
-#target_link_libraries(cuda_test common_pch)
+cuda_add_executable(cuda_test
+    cuda_test.cu
+    OPTIONS --expt-relaxed-constexpr
+)
+
+target_link_libraries(cuda_test common_pch)

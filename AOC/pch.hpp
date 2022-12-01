@@ -23,8 +23,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include <experimental/mdspan>
-
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/preprocessor.hpp>
 
@@ -33,6 +31,8 @@
 #include <fmt/ranges.h>
 
 #ifndef __CUDACC__
+#include <experimental/mdspan>
+
 #include <immintrin.h>
 
 #include <scn/all.h>
