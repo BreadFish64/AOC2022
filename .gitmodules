@@ -1,0 +1,6 @@
+[submodule "mdspan"]
+	path = mdspan
+	url = https://github.com/kokkos/mdspan.git
+[submodule "scnlib"]
+	path = scnlib
+	url = https://github.com/eliaskosunen/scnlib.git
