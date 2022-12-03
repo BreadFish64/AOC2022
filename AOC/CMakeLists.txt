@@ -32,12 +32,13 @@ add_custom_command(
 
 endfunction()
 
-Problem(test)
-Problem(calorie_counting)
-
 cuda_add_executable(cuda_test
     cuda_test.cu
     OPTIONS --expt-relaxed-constexpr
 )
 
 target_link_libraries(cuda_test common_pch)
+
+Problem(test)
+Problem(calorie_counting)
+Problem(rock_paper_scissors)
