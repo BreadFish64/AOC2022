@@ -1,4 +1,4 @@
-﻿find_package(CUDA     REQUIRED)
+﻿#find_package(CUDA     REQUIRED)
 
 find_package(fmt      CONFIG REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
@@ -32,15 +32,18 @@ add_custom_command(
 
 endfunction()
 
-cuda_add_executable(cuda_test
-    cuda_test.cu
-    OPTIONS --expt-relaxed-constexpr
-)
+#cuda_add_executable(cuda_test
+#    cuda_test.cu
+#    OPTIONS --expt-relaxed-constexpr
+#)
 
-target_link_libraries(cuda_test common_pch)
+#target_link_libraries(cuda_test common_pch)
 
 Problem(test)
 Problem(calorie_counting)
 Problem(rock_paper_scissors)
 Problem(rucksack_reorganization)
 Problem(camp_cleanup)
+Problem(supply_stacks)
+Problem(tuning_trouble)
+Problem(no_space_left_on_device)
