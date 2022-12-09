@@ -92,3 +92,9 @@ constexpr I DivCeil(I x, I y) {
                 BOOST_PP_SEQ_FOR_EACH_I(VARIADIC_MAP, __SCANNER_PASTE_VAL, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)));    \
         }                                                                                                              \
     };
+
+#ifdef _MSC_VER
+#define UB() __assume(false)
+#else
+#define UB() __builtin_unreachable()
+#endif
