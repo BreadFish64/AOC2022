@@ -61,6 +61,10 @@ using f64 = double;
 using usize = std::size_t;
 using ssize = std::make_signed_t<usize>;
 
+constexpr s64 operator""_s64(unsigned long long x) {
+    return static_cast<s64>(x);
+}
+
 constexpr u64 operator""_u64(unsigned long long x) {
     return static_cast<u64>(x);
 }
