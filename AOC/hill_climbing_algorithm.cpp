@@ -34,21 +34,19 @@ struct Map {
         FindShortestRecurse(y + 1, x, steps, max_alt, lowest_steps);
     }
 
-    int FindShortest(ssize y, ssize x) const {
+    int Part1() const {
         std::vector<int> lowest_steps(map.size(), std::numeric_limits<int>::max());
-        FindShortestRecurse(y, x, 0, 'a', lowest_steps);
+        FindShortestRecurse(starting_y, starting_x, 0, 'a', lowest_steps);
         return lowest_steps[ending_index];
     }
 
-    int Part1() const { return FindShortest(starting_y, starting_x); }
-
     int Part2() const {
-        int lowest = std::numeric_limits<int>::max();
+        std::vector<int> lowest_steps(map.size(), std::numeric_limits<int>::max());
         for (ssize pos = map.find('a'); pos != map.npos; pos = map.find('a', pos + 1)) {
             const auto [y, x] = std::div(pos, stride);
-            if (int res = FindShortest(y, x); res < lowest) lowest = res;
+            FindShortestRecurse(y, x, 0, 'a', lowest_steps);
         }
-        return lowest;
+        return lowest_steps[ending_index];
     }
 };
 
