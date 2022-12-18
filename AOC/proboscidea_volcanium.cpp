@@ -75,23 +75,16 @@ class Solver {
             while (you_tunnels) {
                 auto you_dst          = TakeFrom(you_tunnels);
                 auto you_dst_mask     = ~(1_u64 << you_dst);
-                auto elephant_tunnels = reachable_by_elephant;
+                auto elephant_tunnels = reachable_by_elephant & you_dst_mask;
                 while (elephant_tunnels) {
                     auto elephant_dst = TakeFrom(elephant_tunnels);
-                    auto dst_mask     = you_dst_mask & ~(1_u64 << elephant_dst);
-                    if (you_dst == elephant_dst) {
-                        max_sub_relief =
-                            std::max(Continue(you_src, you_minutes_left, reachable_by_you), max_sub_relief);
-                        max_sub_relief = std::max(Continue(elephant_src, elephant_minutes_left, reachable_by_elephant),
-                                                  max_sub_relief);
-                    } else {
-                        max_sub_relief =
-                            std::max(ReliefWithElephantRecurse(
-                                         you_dst, elephant_dst, you_minutes_left - tunnel_lengths[you_src][you_dst] - 1,
-                                         elephant_minutes_left - tunnel_lengths[elephant_src][elephant_dst] - 1,
-                                         reachable_by_you & dst_mask, reachable_by_elephant & dst_mask),
-                                     max_sub_relief);
-                    }
+                    auto dst_mask = you_dst_mask & ~(1_u64 << elephant_dst);
+                    max_sub_relief =
+                        std::max(ReliefWithElephantRecurse(
+                                     you_dst, elephant_dst, you_minutes_left - tunnel_lengths[you_src][you_dst] - 1,
+                                     elephant_minutes_left - tunnel_lengths[elephant_src][elephant_dst] - 1,
+                                     reachable_by_you & dst_mask, reachable_by_elephant & dst_mask),
+                                 max_sub_relief);
                 }
             }
             return relief + max_sub_relief;
