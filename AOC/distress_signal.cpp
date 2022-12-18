@@ -42,15 +42,8 @@ public:
         auto [lhs_int, lhs_nodes] = NodeToVals(lhs);
         auto [rhs_int, rhs_nodes] = NodeToVals(rhs);
         if (lhs_int >= 0 && rhs_int >= 0) return lhs_int <=> rhs_int;
-
-        for (auto lhs_it = lhs_nodes.begin(), rhs_it = rhs_nodes.begin();
-             lhs_it != lhs_nodes.end() || rhs_it != rhs_nodes.end(); ++lhs_it, ++rhs_it) {
-            if (lhs_it == lhs_nodes.end()) return std::strong_ordering::less;
-            if (rhs_it == rhs_nodes.end()) return std::strong_ordering::greater;
-            auto ord = *lhs_it <=> *rhs_it;
-            if (ord != std::strong_ordering::equal) return ord;
-        }
-        return std::strong_ordering::equal;
+        return std::lexicographical_compare_three_way(lhs_nodes.begin(), lhs_nodes.end(), rhs_nodes.begin(),
+                                                      rhs_nodes.end());
     }
     friend bool operator==(const Node& lhs, const Node& rhs) { return lhs <=> rhs == std::strong_ordering::equal; }
 };
