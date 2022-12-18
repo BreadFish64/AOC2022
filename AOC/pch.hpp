@@ -99,6 +99,31 @@ constexpr int Power(I x, std::make_unsigned_t<I> y) {
     return result;
 }
 
+inline std::bitset<8> rotr(std::bitset<8> x, int s) {
+    return std::rotr(static_cast<u8>(x.to_ulong()), s);
+}
+inline std::bitset<8> rotl(std::bitset<8> x, int s) {
+    return std::rotl(static_cast<u8>(x.to_ulong()), s);
+}
+inline std::bitset<16> rotr(std::bitset<16> x, int s) {
+    return std::rotr(static_cast<u16>(x.to_ulong()), s);
+}
+inline std::bitset<16> rotl(std::bitset<16> x, int s) {
+    return std::rotl(static_cast<u16>(x.to_ulong()), s);
+}
+inline std::bitset<32> rotr(std::bitset<32> x, int s) {
+    return std::rotr(static_cast<u32>(x.to_ulong()), s);
+}
+inline std::bitset<32> rotl(std::bitset<32> x, int s) {
+    return std::rotl(static_cast<u32>(x.to_ulong()), s);
+}
+inline std::bitset<64> rotr(std::bitset<64> x, int s) {
+    return std::rotr(static_cast<u64>(x.to_ullong()), s);
+}
+inline std::bitset<64> rotl(std::bitset<64> x, int s) {
+    return std::rotl(static_cast<u64>(x.to_ullong()), s);
+}
+
 #define VARIADIC_MAP(r, macro, i, elem) BOOST_PP_COMMA_IF(i) macro(elem)
 #define __SCANNER_PASTE_VAL(member) val.member
 #define SCANNER(T, fmt, ...)                                                                                           \

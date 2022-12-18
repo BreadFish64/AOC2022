@@ -9,25 +9,82 @@ struct scn::scanner<CubePos> : scn::empty_parser {
     }
 };
 
-using Droplet           = std::array<std::array<std::bitset<32>, 32>, 32>;
-static const auto RANGE = views::iota(1_sz, 31_sz);
+using Column                 = u32;
+using Droplet                = std::array<std::array<Column, 32>, 32>;
+static const auto FULL_RANGE = views::iota(0u, 32u);
+static const auto RANGE      = views::iota(1u, 31u);
 
-s64 SurfaceArea(const Droplet& droplet) {
-    s64 surface_area = 0;
+u32 SurfaceArea(const Droplet& droplet) {
+    u32 surface_area = 0;
     for (auto z : RANGE) {
         for (auto y : RANGE) {
-            for (auto x : RANGE) {
-                if (!droplet[z][y][x]) continue;
-                surface_area += !droplet[z - 1][y][x];
-                surface_area += !droplet[z][y - 1][x];
-                surface_area += !droplet[z][y][x - 1];
-                surface_area += !droplet[z][y][x + 1];
-                surface_area += !droplet[z][y + 1][x];
-                surface_area += !droplet[z + 1][y][x];
+            const auto center = droplet[z][y];
+            std::array parts{
+                center & ~droplet[z - 1][y], center & ~droplet[z + 1][y],    center & ~droplet[z][y - 1],
+                center & ~droplet[z][y + 1], center & ~std::rotr(center, 1), center & ~std::rotl(center, 1),
+            };
+            u32 row_total = ranges::accumulate(parts, 0u, std::plus{}, std::popcount<u32>);
+            surface_area += row_total;
+#ifndef NDEBUG
+            fmt::print("{:3} ", row_total);
+#endif
+        }
+#ifndef NDEBUG
+        fmt::print("\n");
+#endif
+    }
+    return surface_area;
+}
+
+std::tuple<Droplet, u32> GenerateSteam(const Droplet& droplet) {
+    Droplet steam{};
+    // Add border for the surface area calculation
+    // And another border for the steam to propagate inward from
+    for (auto z : FULL_RANGE) {
+        for (auto y : FULL_RANGE) {
+            steam[z][y] |= Column{0xC0000003};
+        }
+    }
+    for (auto z : FULL_RANGE) {
+        for (auto x : FULL_RANGE) {
+            steam[z][0] |= 1 << x;
+            steam[z][1] |= 1 << x;
+            steam[z][30] |= 1 << x;
+            steam[z][31] |= 1 << x;
+        }
+    }
+    for (auto y : FULL_RANGE) {
+        for (auto x : FULL_RANGE) {
+            steam[0][y] |= 1 << x;
+            steam[1][y] |= 1 << x;
+            steam[30][y] |= 1 << x;
+            steam[31][y] |= 1 << x;
+        }
+    }
+    // Expand to fill outside space
+    u32 rounds = 0;
+    u32 dirty  = true;
+    while (dirty) {
+        ++rounds;
+        dirty = 0;
+        for (auto z : RANGE) {
+            for (auto y : RANGE) {
+                const auto center  = steam[z][y];
+                const auto RunFace = [&dirty](u32& steam_column, const u32 droplet_column, const u32 center) {
+                    auto expansion = center & ~steam_column & ~droplet_column;
+                    steam_column |= expansion;
+                    dirty |= expansion;
+                };
+                RunFace(steam[z - 1][y], droplet[z - 1][y], center);
+                RunFace(steam[z + 1][y], droplet[z + 1][y], center);
+                RunFace(steam[z][y - 1], droplet[z][y - 1], center);
+                RunFace(steam[z][y + 1], droplet[z][y + 1], center);
+                RunFace(steam[z][y], droplet[z][y], std::rotr(center, 1));
+                RunFace(steam[z][y], droplet[z][y], std::rotl(center, 1));
             }
         }
     }
-    return surface_area;
+    return {steam, rounds};
 }
 
 int main() {
@@ -40,77 +97,12 @@ int main() {
     for (CubePos cube : cubes) {
         // This is a surprise tool that will help us later
         cube += CubePos{2, 2, 2};
-        droplet[cube[0]][cube[1]][cube[2]] = true;
+        droplet[cube[0]][cube[1]] |= 1 << cube[2];
     }
-    Droplet steam{};
-    // Add border for the surface area calculation
-    // And another border for the steam to propagate inward from
-    for (auto z : RANGE) {
-        for (auto y : RANGE) {
-            steam[z][y][0]  = true;
-            steam[z][y][1]  = true;
-            steam[z][y][30] = true;
-            steam[z][y][31] = true;
-        }
-    }
-    for (auto z : RANGE) {
-        for (auto x : RANGE) {
-            steam[z][0][x]  = true;
-            steam[z][1][x]  = true;
-            steam[z][30][x] = true;
-            steam[z][31][x] = true;
-        }
-    }
-    for (auto y : RANGE) {
-        for (auto x : RANGE) {
-            steam[0][y][x]  = true;
-            steam[1][y][x]  = true;
-            steam[30][y][x] = true;
-            steam[31][y][x] = true;
-        }
-    }
-    // Expand to fill outside space
-    bool dirty     = true;
-    while (dirty) {
-        dirty = false;
-        for (auto z : RANGE) {
-            for (auto y : RANGE) {
-                for (auto x : RANGE) {
-                    if (!steam[z][y][x]) continue;
-                    if (!droplet[z - 1][y][x] && !steam[z - 1][y][x]) {
-                        steam[z - 1][y][x] = true;
-                        dirty              = true;
-                    };
-                    if (!droplet[z][y - 1][x] && !steam[z][y - 1][x]) {
-                        steam[z][y - 1][x] = true;
-                        dirty              = true;
-                    };
-                    if (!droplet[z][y][x - 1] && !steam[z][y][x - 1]) {
-                        steam[z][y][x - 1] = true;
-                        dirty              = true;
-                    };
-                    if (!droplet[z][y][x + 1] && !steam[z][y][x + 1]) {
-                        steam[z][y][x + 1] = true;
-                        dirty              = true;
-                    };
-                    if (!droplet[z][y + 1][x] && !steam[z][y + 1][x]) {
-                        steam[z][y + 1][x] = true;
-                        dirty              = true;
-                    };
-                    if (!droplet[z][y + 1][x] && !steam[z][y + 1][x]) {
-                        steam[z][y + 1][x] = true;
-                        dirty              = true;
-                    };
-                    if (!droplet[z + 1][y][x] && !steam[z + 1][y][x]) {
-                        steam[z + 1][y][x] = true;
-                        dirty              = true;
-                    };
-                }
-            }
-        }
-    }
-    auto stop_time = std::chrono::steady_clock::now();
-    fmt::print("Solve time for both parts: {}\n", stop_time - start_time);
-    fmt::print("Part 1: {}\n", SurfaceArea(droplet));
-    fmt::print("Part 2: {}\n", SurfaceArea(steam));
+    auto [steam, rounds] = GenerateSteam(droplet);
+    auto stop_time       = std::chrono::steady_clock::now();
+    fmt::print("\nSolve time for both parts: {}\n", stop_time - start_time);
+    fmt::print("\nPart 1: {}\n", SurfaceArea(droplet));
+    fmt::print("\nPart 2: {}\n", SurfaceArea(steam));
+    fmt::print("\nPart 2 took {} rounds\n", rounds);
 }
