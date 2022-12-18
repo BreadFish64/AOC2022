@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
-#include <fmt/ostream.h>
+#include <fmt/core.h>
 
 #ifdef __INTELLISENSE__
 
@@ -86,6 +86,13 @@ inline UniqueCudaBuffer<T> MakeDeviceBuffer(size_t count) {
     Check(cudaMalloc(reinterpret_cast<void**>(&ptr), sizeof(T) * count));
     return UniqueCudaBuffer<T>{ptr};
 }
+template <typename T>
+inline UniqueCudaBuffer<T> MakeUnifiedDeviceBuffer(size_t count) {
+    T* ptr{};
+    Check(cudaMallocManaged(reinterpret_cast<void**>(&ptr), sizeof(T) * count));
+    return UniqueCudaBuffer<T>{ptr};
+}
+
 
 /// <summary>
 /// Alias for unique_ptr to cudaArray

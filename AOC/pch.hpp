@@ -26,11 +26,15 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/preprocessor.hpp>
 
+#include <Eigen/Dense>
+
 #include <fmt/chrono.h>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
 #ifndef __CUDACC__
+#include <fmt/ostream.h>
+
 #include <experimental/mdspan>
 
 #include <immintrin.h>

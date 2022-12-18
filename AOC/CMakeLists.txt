@@ -1,13 +1,13 @@
-﻿#find_package(CUDA     REQUIRED)
-
-find_package(fmt      CONFIG REQUIRED)
-find_package(range-v3 CONFIG REQUIRED)
-find_package(Boost    REQUIRED)
+﻿find_package(CUDA        REQUIRED)
+find_package(fmt         CONFIG REQUIRED)
+find_package(range-v3    CONFIG REQUIRED)
+find_package(Boost       REQUIRED)
+find_package(Eigen3 3.3  REQUIRED NO_MODULE)
 
 add_library(common_pch
     pch.cpp
 )
-target_link_libraries(common_pch PUBLIC fmt::fmt scn::scn range-v3 Boost::boost std::mdspan)
+target_link_libraries(common_pch PUBLIC fmt::fmt scn::scn range-v3 Boost::boost std::mdspan Eigen3::Eigen)
 target_precompile_headers(common_pch PUBLIC pch.hpp)
 
 function(Problem problem_name)
@@ -32,14 +32,6 @@ add_custom_command(
 
 endfunction()
 
-#cuda_add_executable(cuda_test
-#    cuda_test.cu
-#    OPTIONS --expt-relaxed-constexpr
-#)
-
-#target_link_libraries(cuda_test common_pch)
-
-Problem(test)
 Problem(calorie_counting)
 Problem(rock_paper_scissors)
 Problem(rucksack_reorganization)
@@ -53,3 +45,23 @@ Problem(cathode_ray_tube)
 Problem(monkey_in_the_middle)
 Problem(hill_climbing_algorithm)
 Problem(distress_signal)
+Problem(regolith_reservoir)
+Problem(beacon_exclusion_zone)
+
+cuda_add_executable(beacon_exclusion_zone_cu
+    beacon_exclusion_zone_cu.cu
+    OPTIONS --expt-relaxed-constexpr
+)
+target_link_libraries(beacon_exclusion_zone_cu common_pch)
+set_target_properties(beacon_exclusion_zone_cu
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${problem_name}"
+)
+add_custom_command(
+        TARGET beacon_exclusion_zone_cu POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_SOURCE_DIR}/input/beacon_exclusion_zone.txt
+                ${CMAKE_BINARY_DIR}/${problem_name}/input.txt)
+
+Problem(proboscidea_volcanium)
+Problem(pyroclastic_flow)
