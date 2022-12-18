@@ -145,7 +145,7 @@ public:
                 for (usize dst = 0; dst < per_valve_tunnels.size(); ++dst) {
                     s8& direct = tunnel_lengths[src][dst];
                     for (usize in = 0; in < per_valve_tunnels.size(); ++in) {
-                        unsigned segmented = tunnel_lengths[src][in];
+                        s32 segmented = tunnel_lengths[src][in];
                         segmented += tunnel_lengths[in][dst];
                         if (segmented < direct) {
                             direct = segmented;
