@@ -67,8 +67,11 @@ std::tuple<Droplet, u32> GenerateSteam(const Droplet& droplet) {
     while (dirty) {
         ++rounds;
         dirty = 0;
-        for (auto z : RANGE) {
-            for (auto y : RANGE) {
+        for (const auto iz : RANGE) {
+            // Alternate between beginning and end
+            const auto z = iz & 1 ? 1 + iz / 2u : 31u - iz / 2u;
+            for (const auto iy : RANGE) {
+                const auto  y       = iy & 1 ? 1 + iy / 2u : 31u - iy / 2u;
                 const auto center  = steam[z][y];
                 const auto RunFace = [&dirty](u32& steam_column, const u32 droplet_column, const u32 center) {
                     auto expansion = center & ~steam_column & ~droplet_column;
