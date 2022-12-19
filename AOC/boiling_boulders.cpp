@@ -9,10 +9,11 @@ struct scn::scanner<CubePos> : scn::empty_parser {
     }
 };
 
+constexpr u32 ROW_SIZE       = 26;
 using Column                 = u32;
-using Droplet                = std::array<std::array<Column, 32>, 32>;
-static const auto FULL_RANGE = views::iota(0u, 32u);
-static const auto RANGE      = views::iota(1u, 31u);
+using Droplet                = std::array<std::array<Column, ROW_SIZE>, ROW_SIZE>;
+static const auto FULL_RANGE = views::iota(0u, ROW_SIZE);
+static const auto RANGE      = views::iota(1u, ROW_SIZE - 1);
 
 u32 SurfaceArea(const Droplet& droplet) {
     u32 surface_area = 0;
@@ -49,16 +50,16 @@ std::tuple<Droplet, u32> GenerateSteam(const Droplet& droplet) {
         for (auto x : FULL_RANGE) {
             steam[z][0] |= 1 << x;
             steam[z][1] |= 1 << x;
-            steam[z][30] |= 1 << x;
-            steam[z][31] |= 1 << x;
+            steam[z][ROW_SIZE - 2] |= 1 << x;
+            steam[z][ROW_SIZE - 1] |= 1 << x;
         }
     }
     for (auto y : FULL_RANGE) {
         for (auto x : FULL_RANGE) {
             steam[0][y] |= 1 << x;
             steam[1][y] |= 1 << x;
-            steam[30][y] |= 1 << x;
-            steam[31][y] |= 1 << x;
+            steam[ROW_SIZE - 2][y] |= 1 << x;
+            steam[ROW_SIZE - 1][y] |= 1 << x;
         }
     }
     // Expand to fill outside space
@@ -69,9 +70,9 @@ std::tuple<Droplet, u32> GenerateSteam(const Droplet& droplet) {
         dirty = 0;
         for (const auto iz : RANGE) {
             // Alternate between beginning and end
-            const auto z = iz & 1 ? 1 + iz / 2u : 31u - iz / 2u;
+            const auto z = iz & 1 ? 1 + iz / 2u : (ROW_SIZE - 1) - iz / 2u;
             for (const auto iy : RANGE) {
-                const auto  y       = iy & 1 ? 1 + iy / 2u : 31u - iy / 2u;
+                const auto y       = iy & 1 ? 1 + iy / 2u : (ROW_SIZE - 1) - iy / 2u;
                 const auto center  = steam[z][y];
                 const auto RunFace = [&dirty](u32& steam_column, const u32 droplet_column, const u32 center) {
                     auto expansion = center & ~steam_column & ~droplet_column;
@@ -102,10 +103,12 @@ int main() {
         cube += CubePos{2, 2, 2};
         droplet[cube[0]][cube[1]] |= 1 << cube[2];
     }
+    const auto p1        = SurfaceArea(droplet);
     auto [steam, rounds] = GenerateSteam(droplet);
+    const auto p2        = SurfaceArea(steam);
     auto stop_time       = std::chrono::steady_clock::now();
     fmt::print("\nSolve time for both parts: {}\n", stop_time - start_time);
-    fmt::print("\nPart 1: {}\n", SurfaceArea(droplet));
-    fmt::print("\nPart 2: {}\n", SurfaceArea(steam));
+    fmt::print("\nPart 1: {}\n", p1);
+    fmt::print("\nPart 2: {}\n", p2);
     fmt::print("\nPart 2 took {} rounds\n", rounds);
 }
