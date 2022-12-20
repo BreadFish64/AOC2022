@@ -66,3 +66,4 @@ add_custom_command(
 Problem(proboscidea_volcanium)
 Problem(pyroclastic_flow)
 Problem(boiling_boulders)
+Problem(not_enough_minerals)
