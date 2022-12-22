@@ -67,3 +67,19 @@ Problem(proboscidea_volcanium)
 Problem(pyroclastic_flow)
 Problem(boiling_boulders)
 Problem(not_enough_minerals)
+Problem(grove_positioning_system)
+
+cuda_add_executable(monkey_math
+    monkey_math.cu
+    OPTIONS --expt-relaxed-constexpr
+)
+target_link_libraries(monkey_math common_pch)
+set_target_properties(monkey_math
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${problem_name}"
+)
+add_custom_command(
+        TARGET monkey_math POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_SOURCE_DIR}/input/monkey_math.txt
+                ${CMAKE_BINARY_DIR}/${problem_name}/input.txt)
