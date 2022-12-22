@@ -5229,7 +5229,6 @@ static constexpr s64 jcfh(s64 humn_val) {
 static constexpr s64 pvnj(s64 humn_val) {
     return 4;
 }
-static s64           humn_val = 0;
 static constexpr s64 humn(s64 humn_val) {
     return humn_val;
 }
