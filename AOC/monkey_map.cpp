@@ -65,23 +65,19 @@ void RunPart(std::vector<std::string> lines, std::span<const Wrapper<true>> y_wr
                 switch (pos.facing) {
                     case RIGHT: {
                         ++next_pos.x;
-                        if (next_pos.x > x_wrapper.interval.upper())
-                            next_pos = x_wrapper.right_wrap;
+                        if (next_pos.x > x_wrapper.interval.upper()) next_pos = x_wrapper.right_wrap;
                     } break;
                     case DOWN: {
                         ++next_pos.y;
-                        if (next_pos.y > y_wrapper.interval.upper())
-                            next_pos = y_wrapper.right_wrap;
+                        if (next_pos.y > y_wrapper.interval.upper()) next_pos = y_wrapper.right_wrap;
                     } break;
                     case LEFT: {
                         --next_pos.x;
-                        if (next_pos.x < x_wrapper.interval.lower())
-                            next_pos = x_wrapper.left_wrap;
+                        if (next_pos.x < x_wrapper.interval.lower()) next_pos = x_wrapper.left_wrap;
                     } break;
                     case UP: {
                         --next_pos.y;
-                        if (next_pos.y < y_wrapper.interval.lower())
-                            next_pos = y_wrapper.left_wrap;
+                        if (next_pos.y < y_wrapper.interval.lower()) next_pos = y_wrapper.left_wrap;
                     } break;
                     default: assert(false); break;
                 }

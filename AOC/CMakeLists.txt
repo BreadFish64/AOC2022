@@ -85,3 +85,4 @@ add_custom_command(
                 ${CMAKE_BINARY_DIR}/${problem_name}/input.txt)
 
 Problem(monkey_map)
+Problem(unstable_diffusion)
