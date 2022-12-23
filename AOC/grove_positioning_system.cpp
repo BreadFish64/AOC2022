@@ -62,7 +62,7 @@ s64 Decrypt(std::span<const s64> shifts, const s64 key, const s32 rounds) {
             if (nidx < idx) {
                 std::rotate(words.begin() + nidx, words.begin() + idx, words.begin() + idx + 1);
             }
-            for (s64 w = std::min({idx, nidx}); w <= std::max(idx, nidx); ++w) {
+            for (s64 w = std::min(idx, nidx); w <= std::max(idx, nidx); ++w) {
                 indices[words[w].original_index] = w;
             }
         }
@@ -79,5 +79,5 @@ int main() {
     scn::scan_list(input_file, shifts);
 
     fmt::print("Part 1: {}\n", Decrypt(shifts, 1, 1));
-    // fmt::print("Part 2: {}\n", Decrypt(shifts, 811589153, 10));
+    fmt::print("Part 2: {}\n", Decrypt(shifts, 811589153, 10));
 }

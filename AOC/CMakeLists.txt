@@ -83,3 +83,5 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_CURRENT_SOURCE_DIR}/input/monkey_math.txt
                 ${CMAKE_BINARY_DIR}/${problem_name}/input.txt)
+
+Problem(monkey_map)
