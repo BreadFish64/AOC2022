@@ -99,6 +99,11 @@ constexpr int Power(I x, std::make_unsigned_t<I> y) {
     return result;
 }
 
+template <typename T>
+T sign(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 #ifndef __CUDACC__
 inline std::bitset<8> rotr(std::bitset<8> x, int s) {
     return std::rotr(static_cast<u8>(x.to_ulong()), s);
