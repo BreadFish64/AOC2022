@@ -152,3 +152,10 @@ inline __device__ void Store(cudaSurfaceObject_t surface, Eigen::Vector2i coord,
     // For some reason the x coordinate is in bytes
     return Store(surface, coord[0], coord[1], data, boundaryMode);
 }
+
+template <typename T>
+inline __host__ __device__ void Swap(T& lhs, T& rhs) {
+    T tmp = std::move(lhs);
+    lhs   = std::move(rhs);
+    rhs   = std::move(tmp);
+}

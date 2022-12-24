@@ -1,8 +1,7 @@
-﻿find_package(CUDA        REQUIRED)
-find_package(fmt         CONFIG REQUIRED)
-find_package(range-v3    CONFIG REQUIRED)
-find_package(Boost       REQUIRED)
-find_package(Eigen3 3.3  REQUIRED NO_MODULE)
+﻿find_package(fmt           CONFIG REQUIRED)
+find_package(range-v3      CONFIG REQUIRED)
+find_package(Boost         REQUIRED)
+find_package(Eigen3 3.3    REQUIRED NO_MODULE)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 
 add_library(common_pch
@@ -35,12 +34,15 @@ endfunction()
 
 function(ProblemCU problem_name)
 
-cuda_add_executable(${problem_name}
+add_executable(${problem_name}
     ${problem_name}.cu
-    OPTIONS --expt-relaxed-constexpr
 )
 
-target_link_libraries(${problem_name} common_pch)
+target_compile_options(${problem_name} PRIVATE --expt-relaxed-constexpr)
+
+set_target_properties(${problem_name} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+target_link_libraries(${problem_name} PRIVATE common_pch)
 
 set_target_properties(${problem_name}
     PROPERTIES
@@ -79,4 +81,4 @@ Problem(grove_positioning_system)
 ProblemCU(monkey_math)
 Problem(monkey_map)
 ProblemCU(unstable_diffusion)
-Problem(blizzard_basin)
+ProblemCU(blizzard_basin)
