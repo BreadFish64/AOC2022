@@ -37,7 +37,7 @@ __device__ constexpr s32 BLOCK_SIZE    = 32;
 __device__ constexpr s32 BOUNDARY_SIZE = 3;
 __device__ constexpr s32 TILE_SIZE     = BLOCK_SIZE - (2 * BOUNDARY_SIZE);
 
-__global__ void ElfMoveKernel(cudaSurfaceObject_t elf_surface, s8 proposed_direction, s64* dirty) {
+__global__ void ElfMoveKernel(cudaSurfaceObject_t elf_surface, s8 proposed_direction, s64 round_number, s64* dirty) {
     const std::array<Coord, 4> DIR_LUT{{
         {0, -1},
         {0, 1},
@@ -108,7 +108,7 @@ __global__ void ElfMoveKernel(cudaSurfaceObject_t elf_surface, s8 proposed_direc
 
     if (!dead_thread && (cc >= NORTH && cc < END)) {
         if (is_proposed[proposed_direction & 1] && !is_proposed[(proposed_direction & 1) ^ 1]) {
-            *dirty                 = true;
+            *dirty                 = round_number;
             cc                     = NONE;
             GetElf(proposed_coord) = NO_MOVE;
         }
@@ -168,14 +168,13 @@ int main() {
     Check(cudaCreateSurfaceObject(&elf_surface, &descriptor));
     auto cleanup_surfaces = gsl::finally([&] { Check(cudaDestroySurfaceObject(elf_surface)); });
 
-    s64        elves_moved     = true;
-    s8         round_direction = NORTH;
-    s32        round_count     = 0;
-    const auto DoRound         = [&] {
-        ++round_count;
-        elves_moved = false;
+    s64 elves_moved     = 0;
+    s8  round_direction = NORTH;
+    s32 round_count     = 0;
+    Check(cudaMemcpy(d_elf_dirty_buffer.get(), &elves_moved, sizeof(elves_moved), cudaMemcpyHostToDevice));
 
-        Check(cudaMemcpy(d_elf_dirty_buffer.get(), &elves_moved, sizeof(elves_moved), cudaMemcpyHostToDevice));
+    const auto DoRound = [&] {
+        ++round_count;
         ElfMoveKernel<<<dim3{
                             DivCeil(GRID_SIZE, TILE_SIZE),
                             DivCeil(GRID_SIZE, TILE_SIZE),
@@ -183,10 +182,8 @@ int main() {
                         dim3{
                             BLOCK_SIZE,
                             BLOCK_SIZE,
-                        }>>>(elf_surface, round_direction, d_elf_dirty_buffer.get());
+                        }>>>(elf_surface, round_direction, round_count, d_elf_dirty_buffer.get());
         Check(cudaPeekAtLastError());
-        Check(cudaMemcpy(&elves_moved, d_elf_dirty_buffer.get(), sizeof(elves_moved), cudaMemcpyDeviceToHost));
-
         if (++round_direction == END) round_direction = NORTH;
     };
     while (round_count < 10)
@@ -209,14 +206,15 @@ int main() {
     }
     const s32 empty_cells = (max_y - min_y + 1) * (max_x - min_x + 1) - elf_count;
 
-    while (elves_moved)
+    while (round_count < 1000)
         DoRound();
+    Check(cudaMemcpy(&elves_moved, d_elf_dirty_buffer.get(), sizeof(elves_moved), cudaMemcpyDeviceToHost));
 
     auto end_time = std::chrono::steady_clock::now();
 
     fmt::print("\nBounding Box: y = [{}, {}], x = [{}, {}]\n", min_y, max_y, min_x, max_x);
     fmt::print("Elves: {}\nEmpty Cells: {}\n", elf_count, empty_cells);
 
-    fmt::print("Elves stopped after {} rounds\n", round_count);
+    fmt::print("Elves stopped after {} rounds\n", elves_moved + 1);
     fmt::print("Time: {}\n", end_time - start_time);
 }
