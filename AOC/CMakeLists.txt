@@ -3,11 +3,12 @@ find_package(fmt         CONFIG REQUIRED)
 find_package(range-v3    CONFIG REQUIRED)
 find_package(Boost       REQUIRED)
 find_package(Eigen3 3.3  REQUIRED NO_MODULE)
+find_package(Microsoft.GSL CONFIG REQUIRED)
 
 add_library(common_pch
     pch.cpp
 )
-target_link_libraries(common_pch PUBLIC fmt::fmt scn::scn range-v3 Boost::boost std::mdspan Eigen3::Eigen)
+target_link_libraries(common_pch PUBLIC fmt::fmt scn::scn range-v3 Boost::boost std::mdspan Eigen3::Eigen Microsoft.GSL::GSL)
 target_precompile_headers(common_pch PUBLIC pch.hpp)
 
 function(Problem problem_name)
@@ -18,6 +19,28 @@ add_executable(${problem_name}
 
 target_link_libraries(${problem_name} PRIVATE common_pch)
 target_precompile_headers(${problem_name} REUSE_FROM common_pch)
+
+set_target_properties(${problem_name}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${problem_name}"
+)
+
+add_custom_command(
+        TARGET ${problem_name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_SOURCE_DIR}/input/${problem_name}.txt
+                ${CMAKE_BINARY_DIR}/${problem_name}/input.txt)
+
+endfunction()
+
+function(ProblemCU problem_name)
+
+cuda_add_executable(${problem_name}
+    ${problem_name}.cu
+    OPTIONS --expt-relaxed-constexpr
+)
+
+target_link_libraries(${problem_name} common_pch)
 
 set_target_properties(${problem_name}
     PROPERTIES
@@ -47,42 +70,12 @@ Problem(hill_climbing_algorithm)
 Problem(distress_signal)
 Problem(regolith_reservoir)
 Problem(beacon_exclusion_zone)
-
-cuda_add_executable(beacon_exclusion_zone_cu
-    beacon_exclusion_zone_cu.cu
-    OPTIONS --expt-relaxed-constexpr
-)
-target_link_libraries(beacon_exclusion_zone_cu common_pch)
-set_target_properties(beacon_exclusion_zone_cu
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${problem_name}"
-)
-add_custom_command(
-        TARGET beacon_exclusion_zone_cu POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/input/beacon_exclusion_zone.txt
-                ${CMAKE_BINARY_DIR}/${problem_name}/input.txt)
-
+ProblemCU(beacon_exclusion_zone_cu)
 Problem(proboscidea_volcanium)
 Problem(pyroclastic_flow)
 Problem(boiling_boulders)
 Problem(not_enough_minerals)
 Problem(grove_positioning_system)
-
-cuda_add_executable(monkey_math
-    monkey_math.cu
-    OPTIONS --expt-relaxed-constexpr
-)
-target_link_libraries(monkey_math common_pch)
-set_target_properties(monkey_math
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${problem_name}"
-)
-add_custom_command(
-        TARGET monkey_math POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/input/monkey_math.txt
-                ${CMAKE_BINARY_DIR}/${problem_name}/input.txt)
-
+ProblemCU(monkey_math)
 Problem(monkey_map)
-Problem(unstable_diffusion)
+ProblemCU(unstable_diffusion)

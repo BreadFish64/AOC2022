@@ -6,6 +6,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
+
+#include <Eigen/Dense>
+
 #include <fmt/core.h>
 
 #ifdef __INTELLISENSE__
@@ -93,7 +96,6 @@ inline UniqueCudaBuffer<T> MakeUnifiedDeviceBuffer(size_t count) {
     return UniqueCudaBuffer<T>{ptr};
 }
 
-
 /// <summary>
 /// Alias for unique_ptr to cudaArray
 /// </summary>
@@ -125,6 +127,12 @@ inline __device__ T Load(cudaSurfaceObject_t surface, int x, int y,
 }
 
 template <typename T>
+inline __device__ T Load(cudaSurfaceObject_t surface, Eigen::Vector2i coord,
+                         cudaSurfaceBoundaryMode boundaryMode = cudaBoundaryModeZero) {
+    return Load<T>(surface, coord[0], coord[1], boundaryMode);
+}
+
+template <typename T>
 inline __device__ void Store(cudaSurfaceObject_t surface, int x, int y, T data,
                              cudaSurfaceBoundaryMode boundaryMode = cudaBoundaryModeZero) {
     // For some reason the x coordinate is in bytes
@@ -136,4 +144,11 @@ inline __device__ void Store(cudaSurfaceObject_t surface, int x, T data,
                              cudaSurfaceBoundaryMode boundaryMode = cudaBoundaryModeZero) {
     // For some reason the x coordinate is in bytes
     return surf1Dwrite(data, surface, x * sizeof(T), boundaryMode);
+}
+
+template <typename T>
+inline __device__ void Store(cudaSurfaceObject_t surface, Eigen::Vector2i coord, T data,
+                             cudaSurfaceBoundaryMode boundaryMode = cudaBoundaryModeZero) {
+    // For some reason the x coordinate is in bytes
+    return Store(surface, coord[0], coord[1], data, boundaryMode);
 }
