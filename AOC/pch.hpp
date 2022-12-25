@@ -89,8 +89,8 @@ constexpr I DivCeil(I x, I y) {
     return (x + y - 1) / y;
 }
 
-template <typename I>
-constexpr int Power(I x, std::make_unsigned_t<I> y) {
+template <typename I, typename P>
+constexpr I Power(I x, P y) {
     I result = 1;
     while (y != 0) {
         if (y & 1) result *= x;
